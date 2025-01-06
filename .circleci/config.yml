@@ -3,32 +3,36 @@ version: 2.1
 executors:
   node-docker-executor:
     docker:
-      - image: cimg/node:18.0
-      - image: docker:24.0.2 # Docker daemon
+      - image: cimg/node:18.0 # Node.js image
     working_directory: ~/project
 
 jobs:
   build-and-push:
     executor: node-docker-executor
     steps:
-      - checkout # Step 1: Checkout code
+      # Step 1: Check out the code
+      - checkout
 
-      # Step 2: Set up SSH for private repo access
+      # Step 2: Set up SSH for accessing private repositories
       - add_ssh_keys:
           fingerprints:
-            - SHA256:1i68JR5gp0mkAS20d+WB0T8IhDLKg9T1TsnvvwtytcM # Replace with your SSH key fingerprint
+            - SHA256:1i68JR5gp0mkAS20d+WB0T8IhDLKg9T1TsnvvwtytcM # Replace with your actual SSH key fingerprint
 
-      # Step 3: Install dependencies
+      # Step 3: Set up the remote Docker environment
+      - setup_remote_docker:
+          version: 24.0.2 # Use a specific Docker version if needed
+
+      # Step 4: Install dependencies
       - run:
           name: Install dependencies
           command: npm ci
-
-      # Step 4: Build the application
+      
+      # Step 5: Build the application
       - run:
           name: Build the application
           command: npm run build
 
-      # Step 5: Extract version from package.json
+      # Step 6: Extract the version from package.json
       - run:
           name: Extract version
           command: |
@@ -38,26 +42,22 @@ jobs:
           name: Print version
           command: echo "Version is $VERSION"
 
-      # Step 6: Log in to Docker Hub
-      - setup_remote_docker:
-          docker_layer_caching: true
+      # Step 7: Log in to Docker Hub
       - run:
           name: Log in to Docker Hub
           command: echo $DOCKERHUB_TOKEN | docker login --username $DOCKERHUB_USERNAME --password-stdin
 
-      # Step 7: Build and push Docker images
+      # Step 8: Build and push Docker images
       - run:
           name: Build and push Docker image
           command: |
-            export VERSION=$VERSION
             echo "Building and tagging Docker images..."
-            DOCKERHUB_USERNAME=$DOCKERHUB_USERNAME VERSION=$VERSION docker compose -f docker-compose.yml build --no-cache --build-arg VERSION=$VERSION
-
+            docker compose -f docker-compose.yml build --no-cache --build-arg VERSION=$VERSION
             docker tag $DOCKERHUB_USERNAME/test-circleci:$VERSION-backend $DOCKERHUB_USERNAME/test-circleci:latest-backend
             docker push $DOCKERHUB_USERNAME/test-circleci:$VERSION-backend
             docker push $DOCKERHUB_USERNAME/test-circleci:latest-backend
 
-      # Step 8: Clean up
+      # Step 9: Clean up Docker images
       - run:
           name: Clean up Docker images
           command: docker system prune -af --volumes

@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION} # Build version from your GitHub Actions or environment
+    image: '${DOCKERHUB_USERNAME}/test-circleci:${VERSION}-backend' # Tagged by version
+    ports:
+      - '9000:9000' # Exposing port 9000 for Nest.js
+    network_mode: 'host'
+    environment:
+      NODE_ENV: development
+    env_file:
+      - .env # Load environment variables from .env file
+    restart: unless-stopped
