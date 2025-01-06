@@ -19,14 +19,13 @@ jobs:
             - SHA256:1i68JR5gp0mkAS20d+WB0T8IhDLKg9T1TsnvvwtytcM # Replace with your actual SSH key fingerprint
 
       # Step 3: Set up the remote Docker environment
-      - setup_remote_docker:
-          version: 24.0.2 # Use a specific Docker version if needed
+      - setup_remote_docker
 
       # Step 4: Install dependencies
       - run:
           name: Install dependencies
           command: npm ci
-      
+
       # Step 5: Build the application
       - run:
           name: Build the application
@@ -63,7 +62,7 @@ jobs:
           command: docker system prune -af --volumes
 
 workflows:
-  version: 2
+  version: 2.1
   build-and-push-workflow:
     jobs:
       - build-and-push
