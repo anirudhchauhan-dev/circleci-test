@@ -3,7 +3,7 @@ version: 2.1
 executors:
   node-docker-executor:
     docker:
-      - image: circleci/node:18
+      - image: cimg/node:18.0
       - image: docker:24.0.2 # Docker daemon
     working_directory: ~/project
 
