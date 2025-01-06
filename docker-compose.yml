@@ -10,7 +10,7 @@ services:
       - '9000:9000' # Exposing port 9000 for Nest.js
     network_mode: 'host'
     environment:
-      NODE_ENV: development
-    env_file:
-      - .env # Load environment variables from .env file
+      - NODE_ENV
+      - DATABASE_URL
+      - JWT_SECRET
     restart: unless-stopped
